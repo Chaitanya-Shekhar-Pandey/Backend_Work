@@ -1,0 +1,24 @@
+{
+  "name": "index.js",
+  "version": "1.0.0",
+  "description": "My First Backend Work",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon src/index.js "
+  },
+  "keywords": [
+    "node",
+    "javascript",
+    "backend"
+  ],
+  "author": "Chaitanya Shekhar Pandey",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10",
+    "prettier": "^3.6.2"
+  }
+}
