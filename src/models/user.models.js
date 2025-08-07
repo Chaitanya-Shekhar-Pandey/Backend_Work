@@ -36,7 +36,7 @@ const userschema = Schema({
     },
     refreshToken:{
         type : String,
-        required:true,
+        default : ""
     },
     watchHistory:[
         {
@@ -47,17 +47,22 @@ const userschema = Schema({
 },{timestamps:true})
 
 
-userschema.pre("save", async function(next){
-    if(!this.isModified("password")) return next()
-    this.password = await bcrypt.hash(this.password , 10)
-    next()
+userschema.pre("save", async function (next) {
+    if(!this.isModified("password")) return next();
+
+    try {
+        this.password = await bcrypt.hash(this.password, 10);
+        next();
+    } catch (error) {
+        next(error); 
+    }
 })
 
-userschema.methods.isPasswordCorrect(async function(){
+userschema.methods.isPasswordCorrect = async function(password){
     return await bcrypt.compare(password,this.password)
-})
+}
 
-userschema.methods.generateAccessToken(function(){
+userschema.methods.generateAccessToken = function(){
     return jwt.sign(
     {
         _id : this._id,
@@ -70,9 +75,9 @@ userschema.methods.generateAccessToken(function(){
         expiresIn : process.env.ACCESS_TOKEN_EXP
     }
 )
-})
+}
 
-userschema.methods.generateRefreshToken(function(){
+userschema.methods.generateRefreshToken = function(){
     return jwt.sign(
     {
         _id : this._id,
@@ -82,6 +87,6 @@ userschema.methods.generateRefreshToken(function(){
         expiresIn : process.env.REFRESH_TOKEN_EXP
     }
 )
-})
+}
 
 export const User = mongoose.model("User" , userschema)
