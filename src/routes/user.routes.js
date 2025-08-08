@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { loginuser, logoutuser, register_user } from "../controllers/user.controllers.js";
 import { upload } from "../middleware/multer.middleware.js";
+import { verifyJwt } from "../middleware/auth.middleware.js";
 
 const router = Router()
 /*WE CAN USE MIDDLEWARE HERE JUST BEFORE EXECUTING THE METHOD TO REGISTER USER , HERE MIDDLEWARE WILL BE RESPONSIBLE TO UPLOAD AND HANDLE FILE , */
@@ -17,5 +18,5 @@ router.route("/register").post(/*{Middleware}*/ upload.fields([
 
 router.route("/login").post(loginuser)
 
-router.route("/logout").post(logoutuser)
+router.route("/logout").post(verifyJwt,logoutuser)
 export default router
