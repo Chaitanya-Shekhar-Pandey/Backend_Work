@@ -28,7 +28,7 @@ const userschema = Schema({
         required:true
     },
     coverImage:{
-        type : String
+        type : String,
     },
     password:{
         type : String,
@@ -88,5 +88,6 @@ userschema.methods.generateRefreshToken = function(){
     }
 )
 }
-
+import dotenv from "dotenv";
+dotenv.config({ path: "./.env" });
 export const User = mongoose.model("User" , userschema)

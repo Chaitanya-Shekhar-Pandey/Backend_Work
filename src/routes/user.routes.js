@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { loginuser, logoutuser, register_user } from "../controllers/user.controllers.js";
+import { loginuser, logoutuser, refreshaccesstoken, register_user } from "../controllers/user.controllers.js";
 import { upload } from "../middleware/multer.middleware.js";
 import { verifyJwt } from "../middleware/auth.middleware.js";
 
@@ -19,4 +19,6 @@ router.route("/register").post(/*{Middleware}*/ upload.fields([
 router.route("/login").post(loginuser)
 
 router.route("/logout").post(verifyJwt,logoutuser)
+
+router.route("/refreshToken").post(refreshaccesstoken)
 export default router
