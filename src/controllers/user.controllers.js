@@ -3,8 +3,7 @@ import {ApiError} from "../utils/ApiError.js"
 import {User} from "../models/user.models.js"
 import { fileupload } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import { decode } from "jsonwebtoken";
-
+import jwt from "jsonwebtoken"
 
 const generateAccessTokenandRefreshToken = async(userid)=>{
 
@@ -169,7 +168,7 @@ const refreshaccesstoken = asynchandler(async(req,res)=>{
     try {
         const decodeaccesstoken = jwt.verify(token , process.env.REFRESH_TOKEN_VAL)
         
-        const user = User.findById(decodeaccesstoken?._id)
+        const user = await User.findById(decodeaccesstoken?._id)
         if(!user){ throw new ApiError(400 , "Invalid Refresh Token")}
     
         if(token !== user?.refreshToken){
