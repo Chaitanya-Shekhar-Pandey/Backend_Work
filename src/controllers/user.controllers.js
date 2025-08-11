@@ -191,4 +191,138 @@ const refreshaccesstoken = asynchandler(async(req,res)=>{
     }
 })
 
-export {register_user , loginuser , logoutuser , refreshaccesstoken}
+const changepassword = asynchandler(async(req,res)=>{
+    const {oldpassword , newpassword , confirmpassword} = req.body
+
+    if(newpassword !== confirmpassword){ throw new ApiError(401 , "Passwords Didn't Match")}
+
+    const user = await User.findById(user?._id)
+
+    const validate = await user.isPasswordCorrect(oldpassword)
+
+    if(!validate) {throw new ApiError(401 , "Old Password Didn't Match")}
+
+    user.password = newpassword
+    await user.save({validateBeforeSave : false})
+
+    return res.status(201)
+    .json(new ApiResponse(201 , {} , "Password Changed Successfully")) 
+})
+
+const getUser = asynchandler(async (req,res) => {
+    
+    return res.status(200)
+    .json(new ApiResponse(200 , req.user , "User Fetched Successfully"))
+})
+
+const updateuserdetails = asynchandler(async(req,res)=>{
+    const {fullname , email} = req.body
+
+    if(!fullname || !email){throw new ApiError(402 , "Invalid User Details")}
+
+    const user = User.findByIdAndUpdate(user?._id,{$set:{fullname , email}},{new : true})
+
+    return res.status(201).json(new ApiResponse(201 , user , "User Details are Updated Successfully"))
+})
+
+const updateavatar = asynchandler(async(req,res)=>{
+    const avatarlocalpath = req.file?.path
+
+    if(!avatarlocalpath){throw new ApiError(402 , "Invalid Avatar File")}
+
+    const avatar = await fileupload(avatarlocalpath)
+
+    if(!avatar){throw new ApiError(402 , "Invalid Avatar File")}
+
+    const user = await User.findByIdAndUpdate(req.user?._id , {$set:{avatar : avatar.url}} , {new : true})
+
+    return res.status(201).json(new ApiResponse(201, user, "Avatar Updated Successfully"))
+})
+
+const updatecoverimage = asynchandler(async(req,res)=>{
+    const coverimagelocalpath = req.file?.path
+
+    if(!coverimagelocalpath){throw new ApiError(402 , "Invalid Cover Image File")}
+
+    const coverimage = await fileupload(coverimagelocalpath)
+
+    if(!coverimage){throw new ApiError(402 , "Invalid Avatar File")}
+
+    const user = await User.findByIdAndUpdate(req.user?._id, {$set:{coverimage : coverimage.url}} , {new : true})
+
+    return res.status(201).json(new ApiResponse(201 , user , "Cover Imagae Updated Successfully"))
+})
+
+const getchannelprofile = asynchandler(async(req,res)=>{
+    const {username} = req.params
+
+    if(!username?.trim()){throw new ApiError(401 , "Username Not Found")}
+
+    const channelinfo = await User.aggregate([
+        {
+            $match:{
+                username : username?.toLowerCase()
+            }
+        },
+        {
+            $lookup:{
+                from : "subscriptions",
+                localField : "_id",
+                foriegnField : "channel",
+                as : "subscribers"
+            }
+        },
+        {
+            $lookup:{
+                from : "subscriptions",
+                localField : "_id",
+                foriegnField : "subscriber",
+                as : "subscribed"
+            }
+        },
+        {
+            $addFields:{
+                subscriberscount:{
+                    $size: "$subscribers"
+                },
+                subscribedcount:{
+                    $size: "$subscribed"
+                },
+                isSubscribed:{
+                    if: {$in : [req.user?._id , "$subscribers.subscriber"]},
+                    then: true,
+                    else: false
+                }
+            }
+        },
+        {
+            $project : {
+                fullname:1,
+                username:1,
+                subscriberscount:1,
+                subscribedcount:1,
+                avatar:1,
+                coverimage:1,
+                email:1
+            }
+        }
+    ])
+
+    if(!channelinfo?.length){throw new ApiError(401 , "Channel Does Not Found")}
+
+    return res.status(200)
+    .json(new ApiResponse(200 , channelinfo[0] , "User's Channel Fetched Successfully"))
+})
+
+export {
+    register_user ,
+    loginuser ,
+    logoutuser , 
+    refreshaccesstoken ,
+    changepassword , 
+    getUser ,
+    updateuserdetails ,
+    updateavatar ,
+    updatecoverimage,
+    getchannelprofile
+}
