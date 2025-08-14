@@ -11,7 +11,7 @@ router.route("/register").post(/*{Middleware}*/ upload.fields([
         max_count : 1
     },
     {
-        name: "coverimage",
+        name: "coverImage",
         max_count : 1
     },
 ]), register_user)

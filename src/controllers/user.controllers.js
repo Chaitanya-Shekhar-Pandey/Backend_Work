@@ -60,18 +60,16 @@ const register_user = asynchandler(async(req,res)=>{
 
     let coverimagepath
 
-    if(req.files && Array.isArray(req.files.coverimage) && req.files.coverimage.length > 0){
-        coverimagepath = req.files.coverimage[0].path
+    if(req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0){
+        coverimagepath = req.files.coverImage[0].path
     }
-
-    console.log("Cover_image Path : ",coverimagepath)
 
     if(!avatarpath){
         throw new ApiError(400 , "Uploading Avatar is Required")
     }
 
     const avatar = await fileupload(avatarpath)
-    const coverimage = await fileupload(coverimagepath)
+    const coverImage = await fileupload(coverimagepath)
 
     if(!avatar){
         throw new ApiError(400 , "Uploading Avatar is Required")
@@ -80,7 +78,7 @@ const register_user = asynchandler(async(req,res)=>{
     const user = await User.create({
         fullname,
         avatar : avatar.url,
-        coverimage : coverimage?.url || " ",
+        coverImage : coverImage?.url || " ",
         email,
         username : username.toLowerCase(),
         password
@@ -137,6 +135,9 @@ const loginuser = asynchandler(async(req,res)=>{
 })
 
 const logoutuser = asynchandler(async(req,res)=>{
+    if (!req.user) {
+        throw new ApiError(401, "User not authenticated");
+    }
     await User.findByIdAndUpdate(
         req.user._id,
         {
@@ -162,7 +163,7 @@ const logoutuser = asynchandler(async(req,res)=>{
 })
 
 const refreshaccesstoken = asynchandler(async(req,res)=>{
-    const token = req.cookie.refreshToken || req.body.refreshToken
+    const token = req.cookies?.refreshToken || req.body?.refreshToken
 
     if(!token){ throw new ApiError(400 , "Unauthorized Access Request")}
 
@@ -181,7 +182,7 @@ const refreshaccesstoken = asynchandler(async(req,res)=>{
             secure : true
         }
     
-        const {accessToken , newrefreshToken} = generateAccessTokenandRefreshToken(user._id)
+        const {accessToken , newrefreshToken} = await generateAccessTokenandRefreshToken(user._id)
     
         return res.status(200)
         .cookie("accessToken" , accessToken , option)
@@ -195,9 +196,13 @@ const refreshaccesstoken = asynchandler(async(req,res)=>{
 const changepassword = asynchandler(async(req,res)=>{
     const {oldpassword , newpassword , confirmpassword} = req.body
 
+    console.log("Passwords", oldpassword,newpassword,confirmpassword)
+
+    if (!oldpassword || !newpassword || !confirmpassword) {throw new ApiError(400, "Old password, new password, and confirmation are all required")}
+
     if(newpassword !== confirmpassword){ throw new ApiError(401 , "Passwords Didn't Match")}
 
-    const user = await User.findById(user?._id)
+    const user = await User.findById(req.user?._id)
 
     const validate = await user.isPasswordCorrect(oldpassword)
 
