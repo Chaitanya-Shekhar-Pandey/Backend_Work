@@ -71,4 +71,12 @@ const getVideoById = asynchandler(async (req, res) => {
     .json(new ApiResponse(201 , {video} , "Video Fetched Successfully"))
 })
 
+const updateVideo = asyncHandler(async (req, res) => {
+    const { videoId } = req.params
+    
+    if(!mongoose.isValidObjectId(videoId)) throw new ApiError(400 , "Video Id is Invalid")
+
+
+})
+
 export {getallvideos , publishAVideo , getVideoById}
