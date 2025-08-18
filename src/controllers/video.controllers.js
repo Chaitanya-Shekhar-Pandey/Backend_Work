@@ -40,7 +40,7 @@ const getallvideos = asynchandler(async(req,res)=>{
     
 })
 
-const publishAVideo = asynchandler(async (req, res) => {
+const publishVideo = asynchandler(async (req, res) => {
     const { title, description} = req.body
     
     if([title , description].some((field)=>!field?.trim())){throw new ApiError(400 , "Please Fill the Required Fields")}
@@ -133,4 +133,4 @@ const togglePublishStatus = asynchandler(async (req, res) => {
     .json(new ApiResponse(200 , {video} , "Video Publsihed status is Updated"))
 })
 
-export {getallvideos , publishAVideo , getVideoById , updateVideo , deleteVideo , togglePublishStatus}
+export {getallvideos , publishVideo , getVideoById , updateVideo , deleteVideo , togglePublishStatus}
