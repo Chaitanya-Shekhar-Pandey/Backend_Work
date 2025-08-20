@@ -11,8 +11,6 @@ const getallvideos = asynchandler(async(req,res)=>{
 
     try {
         let filter = {}
-
-        if(!query){throw new ApiError(401 , "Query is Required")}
     
         if(query){
             filter.$or=[
@@ -27,9 +25,9 @@ const getallvideos = asynchandler(async(req,res)=>{
     
         const sortOrder = sortType === 'asc'?1:-1
 
-        const totalvideo = Video.countDocuments(filter)
+        const totalvideo = await Video.countDocuments(filter)
     
-        const video = await Video.find(filter).sort({sortBy : sortOrder}).skip(skip).limit(parseInt(limit))
+        const video = await Video.find(filter).sort({[sortBy] : sortOrder}).skip(skip).limit(parseInt(limit))
     
         return res.status(200)
         .json(new ApiResponse(200 , {page:parseInt(page) , limit:parseInt(limit) , totalvideo , totalpage : Math.ceil(totalvideo/limit) , video} , "All The Videos Are Here as Requested"))

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { verifyJwt } from "../middleware/auth.middleware.js";
-import { fileupload } from "../utils/cloudinary.js";
+import { upload } from "../middleware/multer.middleware.js";
 import { deleteVideo, getallvideos, getVideoById, publishVideo, togglePublishStatus, updateVideo } from "../controllers/video.controllers.js";
 
 const router = Router();
