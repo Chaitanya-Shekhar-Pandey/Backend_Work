@@ -1,11 +1,9 @@
 import { asynchandler } from "../utils/asynchandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import { verifyJwt } from "../middleware/auth.middleware.js";
 import { User } from "../models/user.models.js";
 import { Tweet } from "../models/tweets.models.js";
 import mongoose, { isValidObjectId } from "mongoose";
-import { application } from "express";
 
 
 const createTweet = asynchandler(async (req, res) => {
@@ -65,10 +63,12 @@ const getUserTweets = asynchandler(async (req, res) => {
 const updateTweet = asynchandler(async (req, res) => {
     const {content} = req.body
     if(!content?.trim()) throw new ApiError(400 , "Content is Required")
+    const {tweetid} = req.params
+    if(!isValidObjectId(tweetid)) throw new ApiError(400 , "Tweet Id is Invalid")
 
     const tweet = await Tweet.findByIdAndUpdate(tweet?._id ,{$set:{content}}, {new:true})
 
-    return res.status(200),json(new ApiResponse(200 , tweet , "Tweet Updated Successfully"))
+    return res.status(200).json(new ApiResponse(200 , tweet , "Tweet Updated Successfully"))
 })
 
 const deleteTweet = asynchandler(async (req, res) => {
