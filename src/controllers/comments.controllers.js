@@ -3,8 +3,6 @@ import { ApiError } from "../utils/ApiError";
 import { ApiResponse } from "../utils/ApiResponse";
 import { asynchandler } from "../utils/asynchandler";
 import Comment from "../models/comments.models"
-import { Video } from "../models/video.models";
-import { User } from "../models/user.models";
 
 const getVideoComments = asynchandler(async (req, res) => {
     const {videoId} = req.params
