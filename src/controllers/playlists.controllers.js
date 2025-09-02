@@ -39,7 +39,7 @@ const getUserPlaylists = asynchandler(async (req, res) => {
     }
 })
 
-const getPlaylistById = asyncHandler(async (req, res) => {
+const getPlaylistById = asynchandler(async (req, res) => {
     const {playlistId} = req.params
     if(!isValidObjectId(playlistId)) throw new ApiError(400 , "Invalid Playlist Id")
 
@@ -53,15 +53,15 @@ const getPlaylistById = asyncHandler(async (req, res) => {
     }
 })
 
-const addVideoToPlaylist = asyncHandler(async (req, res) => {
+const addVideoToPlaylist = asynchandler(async (req, res) => {
     const {playlistId, videoId} = req.params
     if(!isValidObjectId(playlistId) || !isValidObjectId(videoId)) throw new ApiError(400 ,"Invalid Playlist Id or Video Id")
 
     const playlist = await Playlist.findById(playlistId)
-    if(!playlist) throw new ApiError(400 , "Playlist ID not Found")
+    if(!playlist) throw new ApiError(404 ,"Playlist not Found" )
 
     const video = await Video.findById(videoId)
-    if(!video) throw new ApiError(400 , "Video ID not Found")
+    if(!video) throw new ApiError(404 , "Video not Found")
 
     try {
         if(!playlist.owner.equals(req.user?._id)) throw new ApiError(403 , "Not Authorize Acess to Update Playlist")
@@ -74,5 +74,69 @@ const addVideoToPlaylist = asyncHandler(async (req, res) => {
         return res.status(200).json(new ApiResponse(200 , playlist , "Video Added to Playlist Successfully"))
     } catch (error) {
         throw new ApiError(401 , "Something Went Wrong While Adding the Video")
+    }
+})
+
+const removeVideoFromPlaylist = asynchandler(async (req, res) => {
+    const {playlistId, videoId} = req.params
+    if(!isValidObjectId(playlistId) || !isValidObjectId(videoId)) throw new ApiError(400 , "Invalid Playlist Id or Video Id")
+
+    const playlist = await Playlist.findById(playlistId)
+    if(!playlist) throw new ApiError(404, "Playlist not Found")
+
+    const video = await Video.findById(videoId)
+    if(!video) throw new ApiError(404,"Video not Found")
+
+    try {
+        if(!playlist.owner.equals(req.user?._id)) throw new ApiError(403 ,"Not Authorize Access to Update Playlist")
+    
+        playlist.videos.pull(videoId)
+        await playlist.save()
+    
+        return res.status(200).json(new ApiResponse(200 , playlist , "Video Removed from the Playlist Successfully"))
+    } catch (error) {
+        throw new ApiError(401 , "Something Went Wrong While Removing the Video")
+    }
+
+})
+
+const deletePlaylist = asynchandler(async (req, res) => {
+    const {playlistId} = req.params
+    if(!isValidObjectId(playlistId)) throw new ApiError(400 , "Invalid Playlist ID")
+
+    const playlist = await Playlist.findById(playlistId)
+    if(!playlistId) throw new ApiError(404 , "Playlist not Found")
+
+    try {
+        if(!playlist.owner.equals(req.user?._id)) throw new ApiError(403 , "Not Authorize to Update Playlist")
+
+        await playlist.deleteOne()
+    
+        return res.status(200).json(new ApiResponse(200 , {} , "Playlist Deleted Successfully"))
+    } catch (error) {
+        throw new ApiError(401 , "Something Went Wrong While Deleting the Playlist")
+    }
+})
+
+const updatePlaylist = asynchandler(async (req, res) => {
+    const {playlistId} = req.params
+    const {name, description} = req.body
+    if(!isValidObjectId(playlistId)) throw new ApiError(400 , "Invalid Playlist Id")
+    if([name , description].some((field)=> !field || field.trim() === "")) throw new ApiError(400 , "Name and Description are Required to Update Playlist")
+
+    const playlist = await Playlist.findById(playlistId)
+    if(!playlist) throw new ApiError(404 , "Playlist not Found")
+
+    try {
+        if(!playlist.owner.equals(req.user?._id)) throw new ApiError(403 , "Not Authorize to Update Playlist")
+    
+        if (name) playlist.name = name;
+        if (description) playlist.description = description;
+
+        const updatedPlaylist = await playlist.save();
+    
+        return res.status(200).json(new ApiResponse(200 , updatedPlaylist , "Playlist Updated Successfully"))
+    } catch (error) {
+        throw new ApiError(401 , "Something Went Wrong while Updating Playlist")
     }
 })
