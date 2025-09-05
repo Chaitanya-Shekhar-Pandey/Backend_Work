@@ -1,9 +1,9 @@
 import mongoose , {isValidObjectId} from "mongoose";
-import Playlist from "../models/playlists.models"
-import Video from "../models/video.models"
-import { asynchandler } from "../utils/asynchandler";
-import { ApiError } from "../utils/ApiError";
-import { ApiResponse } from "../utils/ApiResponse";
+import Playlist from "../models/playlists.models.js"
+import Video from "../models/video.models.js"
+import { asynchandler } from "../utils/asynchandler.js";
+import { ApiError } from "../utils/ApiError.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
 
 const createPlaylist = asynchandler(async (req, res) => {
     const {name, description} = req.body
@@ -129,7 +129,7 @@ const updatePlaylist = asynchandler(async (req, res) => {
 
     try {
         if(!playlist.owner.equals(req.user?._id)) throw new ApiError(403 , "Not Authorize to Update Playlist")
-    
+        // HERE INSTEAD OF findByIdAndUpdate[faster] we are using .save()[safer] because .save() checks for all the middleware whereas the first one skips some of the middleware .save() uses find → modify → save[process]
         if (name) playlist.name = name;
         if (description) playlist.description = description;
 
@@ -140,3 +140,5 @@ const updatePlaylist = asynchandler(async (req, res) => {
         throw new ApiError(401 , "Something Went Wrong while Updating Playlist")
     }
 })
+
+export {createPlaylist , getUserPlaylists , getPlaylistById , addVideoToPlaylist , removeVideoFromPlaylist , deletePlaylist , updatePlaylist}
